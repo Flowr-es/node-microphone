@@ -1,14 +1,5 @@
 ﻿## Information
-
-<table>
-<tr> 
-<td>Package</td><td>microphone</td>
-</tr>
-<tr>
-<td>Description</td>
-<td>node-microphone is a module that use `arecord` ALSA tools on Linux or SoX on Windows & OSX method to start and stop recording sound from a USB Microphone in PCM</td>
-</tr>
-</table>
+node-microphone is a module that use `arecord` ALSA tools on Linux or SoX on Windows & OSX method to start and stop recording sound from a USB Microphone in PCM</td>
 
 ## Notice
 It is currently only tested with Windows (sox 14.4.2), will be also tested with Raspbian in the near future.
@@ -40,7 +31,7 @@ A simple example how to use this module.
 		mic.stopRecording();
 	}
     var audioStream = function( audioData ) {
-		console.log('received audio with length: ' + audio.length );
+		console.log('received audio with length: ' + audioData.length );
 	}
 	var infoStream = function( infoData ) {
 		console.log('received info' );
