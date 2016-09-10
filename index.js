@@ -35,28 +35,31 @@ class Microphone {
 
 
     }
+      
+    // end on silence - default threshold 0.5
+    //'silence', '1', '0.1', options.threshold + '%',
+    //'1', '1.0', options.threshold + '%'
 
-    startRecording(error, audioStream, infoStream) {
+    startRecording() {
         if (this.ps === null) {
             if (isWin) {         
                 this.ps = spawn('sox', ['-b', this.bitwidth, '--endian', this.endian, '-c', this.channels, '-r', this.rate, '-e', this.encoding, '-t', 'waveaudio', 'default', '-p']);
             } else if (isMac) {
-                this.ps = spawn('sox', ['-b', this.bitwidth, '--endian', this.endian, '-c', this.channels, '-r', this.rate, '-e', this.encoding, '-d', '-t', 'dat', '-p']);  
+                this.ps = spawn('rec', ['q', '-b', this.bitwidth, '-c', this.channels, '-r', this.rate, '-e', this.encoding, '-t', 'wav', '-']);  
             } else {
                 this.ps = spawn('arecord', ['-c', this.channels, '-r', this.rate, '-f', this.format, '-D', this.device]);
             }
-            this.ps.stdout.on('error', error);
-            this.ps.stdout.on('data', audioStream);
-
-            this.ps.stderr.on('error', error);
-            if (infoStream) {
-                this.ps.stderr.on('data', infoStream);
-            }            
+            this.ps.on('error', (error) => { console.log(error.message); });
+            return this.ps.stdout;
+           
         }
     }
 
     stopRecording() {
         if (this.ps) {
+            console.log('here');
+         
+            this.ps.stdout.close();
             this.ps.kill();
             this.ps = null;
         }

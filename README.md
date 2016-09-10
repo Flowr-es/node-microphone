@@ -1,13 +1,21 @@
-﻿## Information
-node-microphone is a module that use `arecord` ALSA tools on Linux or SoX on Windows & OSX method to start and stop recording sound from a USB Microphone in PCM</td>
+﻿# node-microphone
+![](http://img.shields.io/badge/stability-stable-orange.svg?style=flat)
+![](http://img.shields.io/npm/v/node-microphone.svg?style=flat)
+![](http://img.shields.io/npm/dm/node-microphone.svg?style=flat)
+![](http://img.shields.io/npm/l/node-microphone.svg?style=flat)
+## Information
+node-microphone is a module that use arecord ALSA tools on Linux or SoX on Windows & OSX method to start and stop recording sound from a USB Microphone in PCM</td>
 
 ## Notice
+Version 0.1.0 API is incompatible to 0.0.x ! 
 It is currently only tested with Windows (sox 14.4.2), will be also tested with Raspbian in the near future.
 As it uses EcmasScript 2015 code it will probably not work with older Node Versions (works with NodeJs 5.10.0)
 
 For Windows do not forget to add sox to your environment variables.
 
 ## Roadmap
+Optional Silence Detection
+Mac and Linux tests
 Unit-Tests
 Optimizations
 
@@ -24,19 +32,14 @@ This library need
 
 A simple example how to use this module.
 
-    var Mic = require('node-microphone');
-	var mic = new Mic();
-	var errorHandler = function ( error ) {
-		console.log('received an error, stopping');
-		mic.stopRecording();
-	}
-    var audioStream = function( audioData ) {
-		console.log('received audio with length: ' + audioData.length );
-	}
-	var infoStream = function( infoData ) {
-		console.log('received info' );
-	}
-    mic.startRecording( audioStream, infoStream );
+    let Mic = require('node-microphone');
+	let mic = new Mic();
+	let micStream = mic.startRecording();
+	micStream.pipe( myWritableStream );
+	setTimeout(() => {
+        logger.info('stopped recording');
+        mic.stopRecording();
+    }, 3000);
     
 
 ## API
@@ -53,15 +56,11 @@ You can give an options Object with the class.
         channels: 1 OR 2 OR anything valid supported by arecord OR sox, default: 1(mono)
         device: hw: 0, 0 OR plughw: 1, 0 OR anything valid supported by arecord. For sox it is taken as waveaudio drive.
 
-#### startRecording(errorHandler, audioStreamHandler, infoStreamHandler)
+#### startRecording()
 
 Start the recording with the given sound options in the class.
 Creates a new child process.
-It will return to the audioStreamHandler the recorded PCM Wave Stream.
-
-errorHandler - will be called if infoStream or audioStream return an error.
-audioStreamHandler - will be called on every audio chunk.
-infoStreamHandler - (optional) will be called if info is available.
+It will return the recording PCM Wave Stream as Node Stream.
 
 #### stopRecording();
 
