@@ -57,9 +57,6 @@ class Microphone {
 
     stopRecording() {
         if (this.ps) {
-            console.log('here');
-         
-            this.ps.stdout.close();
             this.ps.kill();
             this.ps = null;
         }
