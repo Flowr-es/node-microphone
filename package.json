@@ -1,10 +1,13 @@
 {
   "name": "node-microphone",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Allows Microphone access in node with arecord (Linux) and sox (Windows/OSX).",
   "private": false,
   "main": "index.js",
   "author": "Carlos Knoke Flores <carlos@knoke.net>",
+  "engines": {
+    "node": ">=4.0"
+  },
   "license": "MIT",
   "keywords": [
     "microphone",

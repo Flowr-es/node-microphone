@@ -40,6 +40,12 @@ A simple example how to use this module.
         logger.info('stopped recording');
         mic.stopRecording();
     }, 3000);
+	mic.on('info', (info) => {
+		console.log(info);
+	});
+	mic.on('error', (error) => {
+		console.log(error);
+	});
     
 
 ## API
@@ -66,6 +72,10 @@ It will return the recording PCM Wave Stream as Node Stream.
 
 Stops the child process 
 
+#### events
+
+The Microphone Class is extended by events: info and error
+See simple example, how to use them.
 
 ## CONTRIBUTORS
 Thanks to ashishbajaj99 and vincentsaluzzo for their node microphone modules.

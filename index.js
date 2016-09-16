@@ -1,10 +1,12 @@
 ﻿'use strict'
-var isMac = require('os').type() == 'Darwin';
-var isWin = require('os').type().indexOf('Windows') > -1;
-var spawn = require('child_process').spawn
+const isMac = require('os').type() == 'Darwin';
+const isWin = require('os').type().indexOf('Windows') > -1;
+const spawn = require('child_process').spawn;
+const EventEmitter = require('events');
 
-class Microphone {
+class Microphone extends EventEmitter {
     constructor(options) {
+        super();
         this.ps = null;
 
         options = options || {};
@@ -49,7 +51,15 @@ class Microphone {
             } else {
                 this.ps = spawn('arecord', ['-c', this.channels, '-r', this.rate, '-f', this.format, '-D', this.device]);
             }
-            this.ps.on('error', (error) => { console.log(error.message); });
+            this.ps.on('error', (error) => {
+                this.emit('error', error);
+            });
+            this.ps.stderr.on('error', (error) => {
+                this.emit('error', error);
+            });
+            this.ps.stderr.on('data', (info) => {
+                this.emit('info', info);
+            })
             return this.ps.stdout;
            
         }
