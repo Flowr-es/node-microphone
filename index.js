@@ -15,7 +15,7 @@ class Microphone extends EventEmitter {
         this.encoding = options.encoding || 'signed-integer';
         this.rate = options.rate || '16000';
         this.channels = options.channels || '1';
-
+        this.additionalParameters = options.additionalParameters || false;
         if (!isWin && !isMac) {
             this.device = options.device || 'plughw:1,0';
             this.format = undefined;
@@ -43,13 +43,26 @@ class Microphone extends EventEmitter {
     //'1', '1.0', options.threshold + '%'
 
     startRecording() {
+        let audioOptions;
         if (this.ps === null) {
-            if (isWin) {         
-                this.ps = spawn('sox', ['-b', this.bitwidth, '--endian', this.endian, '-c', this.channels, '-r', this.rate, '-e', this.encoding, '-t', 'waveaudio', 'default', '-p']);
+            if (isWin) {   
+                audioOptions = ['-b', this.bitwidth, '--endian', this.endian, '-c', this.channels, '-r', this.rate, '-e', this.encoding, '-t', 'waveaudio', 'default', '-p'];      
+                if (this.additionalParameters) {
+                    audioOptions = audioOptions.concat(this.additionalParameters);
+                }
+                this.ps = spawn('sox', audioOptions);
             } else if (isMac) {
-                this.ps = spawn('rec', ['q', '-b', this.bitwidth, '-c', this.channels, '-r', this.rate, '-e', this.encoding, '-t', 'wav', '-']);  
+                audioOptions = ['-q', '-b', this.bitwidth, '-c', this.channels, '-r', this.rate, '-e', this.encoding, '-t', 'wav', '-'];
+                if (this.additionalParameters) {
+                    audioOptions = audioOptions.concat(this.additionalParameters);
+                }
+                this.ps = spawn('rec', audioOptions);  
             } else {
-                this.ps = spawn('arecord', ['-c', this.channels, '-r', this.rate, '-f', this.format, '-D', this.device]);
+                audioOptions = ['-c', this.channels, '-r', this.rate, '-f', this.format, '-D', this.device];
+                if (this.additionalParameters) {
+                    audioOptions = audioOptions.concat(this.additionalParameters);
+                }
+                this.ps = spawn('arecord', audioOptions);
             }
             this.ps.on('error', (error) => {
                 this.emit('error', error);
