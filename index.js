@@ -16,6 +16,9 @@ class Microphone extends EventEmitter {
         this.rate = options.rate || '16000';
         this.channels = options.channels || '1';
         this.additionalParameters = options.additionalParameters || false;
+        if (isWin) {
+            this.device = options.device || 'default';
+        }
         if (!isWin && !isMac) {
             this.device = options.device || 'plughw:1,0';
             this.format = undefined;
@@ -46,7 +49,7 @@ class Microphone extends EventEmitter {
         let audioOptions;
         if (this.ps === null) {
             if (isWin) {   
-                audioOptions = ['-b', this.bitwidth, '--endian', this.endian, '-c', this.channels, '-r', this.rate, '-e', this.encoding, '-t', 'waveaudio', 'default', '-p'];      
+                audioOptions = ['-b', this.bitwidth, '--endian', this.endian, '-c', this.channels, '-r', this.rate, '-e', this.encoding, '-t', 'waveaudio', this.device, '-p'];      
                 if (this.additionalParameters) {
                     audioOptions = audioOptions.concat(this.additionalParameters);
                 }
