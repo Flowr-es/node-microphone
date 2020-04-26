@@ -14,14 +14,11 @@ As it uses EcmasScript 2015 code it will probably not work with older Node Versi
 For Windows do not forget to add sox to your environment variables.
 
 ## Roadmap
-Optional Silence Detection
-Mac and Linux tests
-Unit-Tests
-Optimizations
+No official roadmap anymore, if you experience issue submit a PR and I will try to merge :-) 
 
 ## Dependencies
 
-This library need
+This library needs
 
 * ALSA tools installed on the machine (`sudo apt-get install alsa-utils`) **for Linux**
 * SoX Tools installed on the machine **for Windows or OSX**

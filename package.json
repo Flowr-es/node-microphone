@@ -1,6 +1,6 @@
 {
   "name": "node-microphone",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Allows Microphone access in node with arecord (Linux) and sox (Windows/OSX).",
   "private": false,
   "main": "index.js",
