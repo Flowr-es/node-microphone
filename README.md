@@ -49,7 +49,7 @@ A simple example how to use this module.
 
 ### new Class(options)
 
-Create a new Class of the microphone module. You can give an options object to the constructor with these parameters:
+Creates a new instance of the Microphone class. You can give an options object to the constructor with these parameters:
 
 | Option | Value | Default |
 |--------|-------|---------|
