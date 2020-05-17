@@ -54,15 +54,21 @@ A simple example on how to use this module:
 
 ### new Class(options)
 
-Creates a new instance of the Microphone class.
-You can give an options Object with the class.
-        options - JSON containing sound options.Following are valid options:
-        endian: big OR little, default: little
-        bitwidth: 8 OR 16 OR 24 OR anything valid supported by arecord OR sox, default: 16
-        encoding: signed - integer OR unsinged- integer(none of the other encoding formats are supported), default:signed - integer
-        rate: 8000 OR 16000 OR 44100 OR anything valid supported by arecord OR sox, default: 16000
-        channels: 1 OR 2 OR anything valid supported by arecord OR sox, default: 1(mono)
-        device: hw: 0, 0 OR plughw: 1, 0 OR anything valid supported by arecord. For sox it is taken as waveaudio drive.
+Creates a new instance of the Microphone class. You can give an options object to the constructor with these parameters:
+
+| Option | Value | Default |
+|--------|-------|---------|
+| `endian` | `'big'` or `'little'` | `'little'` |
+| `bitwidth` | `8`, `16`, `24` <sup>*</sup> | `16` |
+| `encoding` | `'signed-integer'` or `'unsigned-integer'` | `'signed-integer'` |
+| `rate` |  `8000`, `16000`, `44100` <sup>*</sup> | `16000` |
+| `channels` | `1`, `2` <sup>*</sup> | `1` (mono) |
+| `device` | `'hw:0,0'`, `'plughw:1,0'` <sup>*</sup> | |
+| `additionalParameters` | Array of raw string parameters to pass to `spawn()` | |
+
+<sup>*</sup> or any other value supported by arecord or sox.
+
+With sox, the `device` option is used as waveaudio driver.
 
 #### startRecording()
 
