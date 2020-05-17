@@ -1,24 +1,29 @@
-﻿# node-microphone
+# node-microphone
+
 ![](http://img.shields.io/badge/stability-stable-orange.svg?style=flat)
 ![](http://img.shields.io/npm/v/node-microphone.svg?style=flat)
 ![](http://img.shields.io/npm/dm/node-microphone.svg?style=flat)
 ![](http://img.shields.io/npm/l/node-microphone.svg?style=flat)
+
 ## Information
-node-microphone is a module that use arecord ALSA tools on Linux or SoX on Windows & OSX method to start and stop recording sound from a USB Microphone in PCM</td>
+
+node-microphone is a module that use arecord ALSA tools on Linux or SoX on Windows & OSX to start and stop recording audio from a USB Microphone in PCM</td>
 
 ## Notice
-Version 0.1.0 API is incompatible to 0.0.x ! 
-It is currently only tested with Windows (sox 14.4.2), will be also tested with Raspbian in the near future.
-As it uses EcmasScript 2015 code it will probably not work with older Node Versions (works with NodeJs 5.10.0)
 
-For Windows do not forget to add sox to your environment variables.
+Version 0.1.0 is incompatible with 0.0.x ! 
+It is currently only tested with Windows (sox 14.4.2), will also be tested with Raspbian in the near future.
+As it uses ECMAScript 2015, it will probably not work with older Node versions (works with Node 5.10.0).
+
+For Windows, do not forget to add sox to your environment variables.
 
 ## Roadmap
-No official roadmap anymore, if you experience issue submit a PR and I will try to merge :-) 
+
+No official roadmap yet. If you experience issues, submit a PR and I will try to merge :-) 
 
 ## Dependencies
 
-This library needs
+This library needs:
 
 * ALSA tools installed on the machine (`sudo apt-get install alsa-utils`) **for Linux**
 * SoX Tools installed on the machine **for Windows or OSX**
@@ -27,7 +32,7 @@ This library needs
 
 #### Simple example
 
-A simple example how to use this module.
+A simple example on how to use this module:
 
     let Mic = require('node-microphone');
 	let mic = new Mic();
@@ -67,18 +72,17 @@ With sox, the `device` option is used as waveaudio driver.
 
 #### startRecording()
 
-Start the recording with the given sound options in the class.
-Creates a new child process.
-It will return the recording PCM Wave Stream as Node Stream.
+Starts recording by creating a new child process with the options given to the constructor.
+Returns the recording PCM wave stream as Node stream.
 
 #### stopRecording();
 
-Stops the child process 
+Stops the child process.
 
 #### events
 
-The Microphone Class is extended by events: info and error
-See simple example, how to use them.
+The Microphone class extends EventEmitter and emits info and error events.
+The [simple example](#simple-example) shows how to use them.
 
 ## CONTRIBUTORS
 Thanks to ashishbajaj99 and vincentsaluzzo for their node microphone modules.
@@ -107,5 +111,3 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
