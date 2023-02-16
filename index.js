@@ -76,6 +76,9 @@ class Microphone extends EventEmitter {
             this.ps.stderr.on('data', (info) => {
                 this.emit('info', info);
             })
+            this.ps.stdout.on('data', (data) => {
+                this.emit('data', data)
+            })
             return this.ps.stdout;
            
         }
