@@ -65,6 +65,7 @@ Creates a new instance of the Microphone class. You can give an options object t
 | `channels` | `1`, `2` <sup>*</sup> | `1` (mono) |
 | `device` | `'hw:0,0'`, `'plughw:1,0'` <sup>*</sup> | |
 | `additionalParameters` | Array of raw string parameters to pass to `spawn()` | |
+| `useDataEmitter` | `true` or `false` - enables data via mic.on('data') |  `false`  | |
 
 <sup>*</sup> or any other value supported by arecord or sox.
 

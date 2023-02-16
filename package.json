@@ -1,36 +1,36 @@
 {
-  "name": "node-microphone",
-  "version": "0.1.5",
-  "description": "Allows Microphone access in node with arecord (Linux) and sox (Windows/OSX).",
-  "private": false,
-  "main": "index.js",
-  "author": "Carlos Knoke Flores <carlos@knoke.net>",
-  "engines": {
-    "node": ">=4.0"
-  },
-  "license": "MIT",
-  "keywords": [
-    "microphone",
-    "alsa",
-    "mic",
-    "record",
-    "audio",
-    "sox",
-    "capture",
-    "node-microphone",
-    "arecord",
-    "input"
-  ],
-  "dependencies": {},
-  "scripts": {
-    "test": ""
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/MexXxo/node-microphone.git"
-  },
-  "bugs": {
-    "url": "https://github.com/MexXxo/node-microphone/issues"
-  },
-  "homepage": "https://github.com/MexXxo/node-microphone#readme"
+    "name": "node-microphone",
+    "version": "0.1.6",
+    "description": "Allows Microphone access in node with arecord (Linux) and sox (Windows/OSX).",
+    "private": false,
+    "main": "index.js",
+    "author": "Carlos Knoke Flores <carlos@knoke.net>",
+    "engines": {
+        "node": ">=4.0"
+    },
+    "license": "MIT",
+    "keywords": [
+        "microphone",
+        "alsa",
+        "mic",
+        "record",
+        "audio",
+        "sox",
+        "capture",
+        "node-microphone",
+        "arecord",
+        "input"
+    ],
+    "dependencies": {},
+    "scripts": {
+        "test": ""
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/MexXxo/node-microphone.git"
+    },
+    "bugs": {
+        "url": "https://github.com/MexXxo/node-microphone/issues"
+    },
+    "homepage": "https://github.com/MexXxo/node-microphone#readme"
 }
