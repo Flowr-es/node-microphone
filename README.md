@@ -12,8 +12,14 @@
 - Windows: `sox`
 
 It returns the underlying PCM stream and also exposes `info`, `error`, and optional `data` events through an `EventEmitter` API.
-If the recording process exits on its own, the instance now resets itself so recording can be started again.
-The default output format is now consistent across platforms: `raw` PCM unless you override it with `fileType`.
+
+The current 0.2.0 release also improves a few rough edges from 0.1.6:
+
+- consistent default output format across platforms with `fileType: 'raw'`
+- bundled TypeScript declarations
+- constructor validation for invalid option values
+- automatic cleanup when the recorder process closes
+- test coverage for command generation and lifecycle behavior
 
 ## Requirements
 
@@ -32,15 +38,27 @@ npm install node-microphone
 TypeScript declarations are bundled with the package.
 The package now targets Node.js 12+.
 
+## What's New In 0.2.0
+
+Compared with 0.1.6, version 0.2.0 adds and changes:
+
+- TypeScript support through bundled `index.d.ts`
+- a new `fileType` option so Linux, macOS, and Windows can produce the same output type by default
+- a new `spawnOptions` option for passing supported `child_process.spawn()` settings
+- a new `close` event emitted when the recording process exits
+- safer constructor validation for malformed options such as invalid `endian`, non-boolean `useDataEmitter`, or unsupported `spawnOptions.stdio`
+- internal process cleanup so a `Microphone` instance can be started again after the child exits
+- refreshed package metadata, repository links, and automated tests
+
 ## Usage
 
 ```js
 const Microphone = require('node-microphone');
 
 const mic = new Microphone({
-	rate: '16000',
-	channels: '1',
-	fileType: 'raw',
+    rate: '16000',
+    channels: '1',
+    fileType: 'raw',
 });
 
 const micStream = mic.startRecording();
@@ -89,6 +107,7 @@ Notes:
 - On Linux, the package uses `arecord -f <format> -t <fileType> -D <device>`.
 - On macOS, the package uses `rec -t <fileType> -`.
 - On Windows, the package uses `sox -t waveaudio <device> ... -t <fileType> -`.
+- `device` is currently applied on Linux and Windows. On macOS, SoX `rec` uses the default input device.
 - `spawnOptions.stdio` is intentionally rejected because the library depends on piped `stdout` and `stderr`.
 
 ### `startRecording()`
@@ -112,9 +131,9 @@ Stops the spawned recording process and clears the internal process reference.
 import Microphone = require('node-microphone');
 
 const mic = new Microphone({
-	rate: 16000,
-	channels: 1,
-	fileType: 'wav',
+    rate: 16000,
+    channels: 1,
+    fileType: 'wav',
 });
 
 mic.on('close', (code, signal) => {
@@ -127,6 +146,8 @@ mic.on('close', (code, signal) => {
 ```bash
 npm test
 ```
+
+The test suite covers Linux, macOS, and Windows command construction using mocked child processes.
 
 ## Credits
 
