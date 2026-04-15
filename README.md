@@ -1,114 +1,137 @@
 # node-microphone
 
-![](http://img.shields.io/badge/stability-stable-orange.svg?style=flat)
-![](http://img.shields.io/npm/v/node-microphone.svg?style=flat)
-![](http://img.shields.io/npm/dm/node-microphone.svg?style=flat)
-![](http://img.shields.io/npm/l/node-microphone.svg?style=flat)
+![](https://img.shields.io/badge/stability-stable-orange.svg?style=flat)
+![](https://img.shields.io/npm/v/node-microphone.svg?style=flat)
+![](https://img.shields.io/npm/dm/node-microphone.svg?style=flat)
+![](https://img.shields.io/npm/l/node-microphone.svg?style=flat)
 
-## Information
+`node-microphone` provides microphone input in Node.js by spawning platform tools:
 
-node-microphone is a module that use arecord ALSA tools on Linux or SoX on Windows & OSX to start and stop recording audio from a USB Microphone in PCM</td>
+- Linux: `arecord`
+- macOS: `rec` from SoX
+- Windows: `sox`
 
-## Notice
+It returns the underlying PCM stream and also exposes `info`, `error`, and optional `data` events through an `EventEmitter` API.
+If the recording process exits on its own, the instance now resets itself so recording can be started again.
+The default output format is now consistent across platforms: `raw` PCM unless you override it with `fileType`.
 
-Version 0.1.0 is incompatible with 0.0.x ! 
-It is currently only tested with Windows (sox 14.4.2), will also be tested with Raspbian in the near future.
-As it uses ECMAScript 2015, it will probably not work with older Node versions (works with Node 5.10.0).
+## Requirements
 
-For Windows, do not forget to add sox to your environment variables.
+Install the audio capture tool for your platform before using the package.
 
-## Roadmap
+- Linux: ALSA tools, for example `sudo apt-get install alsa-utils`
+- macOS: SoX, with the `rec` command available in `PATH`
+- Windows: SoX, with `sox` available in `PATH`
 
-No official roadmap yet. If you experience issues, submit a PR and I will try to merge :-) 
+## Install
 
-## Dependencies
+```bash
+npm install node-microphone
+```
 
-This library needs:
-
-* ALSA tools installed on the machine (`sudo apt-get install alsa-utils`) **for Linux**
-* SoX Tools installed on the machine **for Windows or OSX**
+TypeScript declarations are bundled with the package.
+The package now targets Node.js 12+.
 
 ## Usage
 
-#### Simple example
+```js
+const Microphone = require('node-microphone');
 
-A simple example on how to use this module:
+const mic = new Microphone({
+	rate: '16000',
+	channels: '1',
+	fileType: 'raw',
+});
 
-    let Mic = require('node-microphone');
-	let mic = new Mic();
-	let micStream = mic.startRecording();
-	micStream.pipe( myWritableStream );
-	setTimeout(() => {
-        logger.info('stopped recording');
-        mic.stopRecording();
-    }, 3000);
-	mic.on('info', (info) => {
-		console.log(info);
-	});
-	mic.on('error', (error) => {
-		console.log(error);
-	});
-    
+const micStream = mic.startRecording();
+
+if (micStream) {
+	micStream.pipe(myWritableStream);
+}
+
+mic.on('info', (info) => {
+	console.log(info.toString());
+});
+
+mic.on('error', (error) => {
+	console.error(error);
+});
+
+setTimeout(() => {
+	mic.stopRecording();
+}, 3000);
+```
+
+If `useDataEmitter` is enabled, audio chunks are also emitted through `mic.on('data', chunk)` in addition to being available from the returned stream.
+Invalid option values throw synchronously from the constructor with a `TypeError`.
 
 ## API
 
-### new Class(options)
+### `new Microphone(options)`
 
-Creates a new instance of the Microphone class. You can give an options object to the constructor with these parameters:
+Creates a new microphone instance.
 
 | Option | Value | Default |
-|--------|-------|---------|
+| --- | --- | --- |
 | `endian` | `'big'` or `'little'` | `'little'` |
-| `bitwidth` | `8`, `16`, `24` <sup>*</sup> | `16` |
-| `encoding` | `'signed-integer'` or `'unsigned-integer'` | `'signed-integer'` |
-| `rate` |  `8000`, `16000`, `44100` <sup>*</sup> | `16000` |
-| `channels` | `1`, `2` <sup>*</sup> | `1` (mono) |
-| `device` | `'hw:0,0'`, `'plughw:1,0'` <sup>*</sup> | |
-| `additionalParameters` | Array of raw string parameters to pass to `spawn()` | |
-| `useDataEmitter` | `true` or `false` - enables data via mic.on('data') |  `false`  | |
+| `bitwidth` | `8`, `16`, `24`, or any value supported by the backend tool | `'16'` |
+| `encoding` | `'signed-integer'`, `'unsigned-integer'`, or backend-specific value | `'signed-integer'` |
+| `rate` | Sample rate supported by the backend tool | `'16000'` |
+| `channels` | Channel count supported by the backend tool | `'1'` |
+| `fileType` | Output container or stream type supported by the backend tool | `'raw'` |
+| `device` | Input device identifier | Linux: `'plughw:1,0'`, Windows: `'default'` |
+| `additionalParameters` | Raw string arguments appended to the spawn command | `false` |
+| `spawnOptions` | Options object passed to `child_process.spawn()` except `stdio` | `undefined` |
+| `useDataEmitter` | Emit audio chunks through the `data` event | `false` |
 
-<sup>*</sup> or any other value supported by arecord or sox.
+Notes:
 
-With sox, the `device` option is used as waveaudio driver.
+- On Linux, the package uses `arecord -f <format> -t <fileType> -D <device>`.
+- On macOS, the package uses `rec -t <fileType> -`.
+- On Windows, the package uses `sox -t waveaudio <device> ... -t <fileType> -`.
+- `spawnOptions.stdio` is intentionally rejected because the library depends on piped `stdout` and `stderr`.
 
-#### startRecording()
+### `startRecording()`
 
-Starts recording by creating a new child process with the options given to the constructor.
-Returns the recording PCM wave stream as Node stream.
+Starts the recording process and returns the spawned process `stdout` stream. If recording is already active, it returns `undefined`.
 
-#### stopRecording();
+### `stopRecording()`
 
-Stops the child process.
+Stops the spawned recording process and clears the internal process reference.
 
-#### events
+### Events
 
-The Microphone class extends EventEmitter and emits info and error events.
-The [simple example](#simple-example) shows how to use them.
+- `info`: stderr output from the recording command as a `Buffer`
+- `error`: process or stream error
+- `close`: emitted when the recording process closes
+- `data`: stdout audio chunk as a `Buffer` when `useDataEmitter` is enabled
 
-## CONTRIBUTORS
-Thanks to ashishbajaj99 and vincentsaluzzo for their node microphone modules.
+## TypeScript
 
-## LICENSE
+```ts
+import Microphone = require('node-microphone');
 
-(MIT License)
+const mic = new Microphone({
+	rate: 16000,
+	channels: 1,
+	fileType: 'wav',
+});
 
-Copyright (c) 2016 Carlos Knoke Flores <carlos@knoke.net>
+mic.on('close', (code, signal) => {
+	console.log(code, signal);
+});
+```
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+## Testing
 
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
+```bash
+npm test
+```
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+## Credits
+
+Thanks to ashishbajaj99 and vincentsaluzzo for related microphone modules that helped shape this package.
+
+## License
+
+MIT. See `LICENSE`.

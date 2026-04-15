@@ -1,8 +1,85 @@
 ﻿'use strict';
-const isMac = require('os').type() == 'Darwin';
-const isWin = require('os').type().indexOf('Windows') > -1;
+const osType = require('os').type();
+const isMac = osType === 'Darwin';
+const isWin = osType.indexOf('Windows') > -1;
 const spawn = require('child_process').spawn;
 const EventEmitter = require('events');
+
+function normalizeStringOption(name, value, defaultValue) {
+    const normalizedValue = value === undefined ? defaultValue : value;
+
+    if (
+        typeof normalizedValue !== 'string' &&
+        typeof normalizedValue !== 'number'
+    ) {
+        throw new TypeError(name + ' must be a string or number');
+    }
+
+    const stringValue = String(normalizedValue);
+
+    if (stringValue.trim() === '') {
+        throw new TypeError(name + ' must not be empty');
+    }
+
+    return stringValue;
+}
+
+function normalizeEndian(value) {
+    const endian = normalizeStringOption('endian', value, 'little');
+
+    if (endian !== 'big' && endian !== 'little') {
+        throw new TypeError("endian must be 'big' or 'little'");
+    }
+
+    return endian;
+}
+
+function normalizeBooleanOption(name, value, defaultValue) {
+    if (value === undefined) {
+        return defaultValue;
+    }
+
+    if (typeof value !== 'boolean') {
+        throw new TypeError(name + ' must be a boolean');
+    }
+
+    return value;
+}
+
+function normalizeAdditionalParameters(value) {
+    if (value === undefined || value === false) {
+        return false;
+    }
+
+    if (
+        !Array.isArray(value) ||
+        value.some((item) => typeof item !== 'string')
+    ) {
+        throw new TypeError(
+            'additionalParameters must be an array of strings or false',
+        );
+    }
+
+    return value.slice();
+}
+
+function normalizeSpawnOptions(value) {
+    if (value === undefined) {
+        return undefined;
+    }
+
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        throw new TypeError('spawnOptions must be an object');
+    }
+
+    if (Object.prototype.hasOwnProperty.call(value, 'stdio')) {
+        throw new TypeError(
+            'spawnOptions.stdio is not supported because node-microphone requires stdout and stderr pipes',
+        );
+    }
+
+    return Object.assign({}, value);
+}
 
 class Microphone extends EventEmitter {
     constructor(options) {
@@ -10,18 +87,50 @@ class Microphone extends EventEmitter {
         this.ps = null;
 
         options = options || {};
-        this.endian = options.endian || 'little';
-        this.bitwidth = options.bitwidth || '16';
-        this.encoding = options.encoding || 'signed-integer';
-        this.rate = options.rate || '16000';
-        this.channels = options.channels || '1';
-        this.additionalParameters = options.additionalParameters || false;
-        this.useDataEmitter = !!options.useDataEmitter;
+        this.endian = normalizeEndian(options.endian);
+        this.bitwidth = normalizeStringOption(
+            'bitwidth',
+            options.bitwidth,
+            '16',
+        );
+        this.encoding = normalizeStringOption(
+            'encoding',
+            options.encoding,
+            'signed-integer',
+        );
+        this.rate = normalizeStringOption('rate', options.rate, '16000');
+        this.channels = normalizeStringOption(
+            'channels',
+            options.channels,
+            '1',
+        );
+        this.fileType = normalizeStringOption(
+            'fileType',
+            options.fileType,
+            'raw',
+        );
+        this.additionalParameters = normalizeAdditionalParameters(
+            options.additionalParameters,
+        );
+        this.spawnOptions = normalizeSpawnOptions(options.spawnOptions);
+        this.useDataEmitter = normalizeBooleanOption(
+            'useDataEmitter',
+            options.useDataEmitter,
+            false,
+        );
         if (isWin) {
-            this.device = options.device || 'default';
+            this.device = normalizeStringOption(
+                'device',
+                options.device,
+                'default',
+            );
         }
         if (!isWin && !isMac) {
-            this.device = options.device || 'plughw:1,0';
+            this.device = normalizeStringOption(
+                'device',
+                options.device,
+                'plughw:1,0',
+            );
             this.format = undefined;
             this.formatEndian = undefined;
             this.formatEncoding = undefined;
@@ -47,9 +156,13 @@ class Microphone extends EventEmitter {
 
     startRecording() {
         let audioOptions;
+        let command;
         if (this.ps === null) {
             if (isWin) {
                 audioOptions = [
+                    '-t',
+                    'waveaudio',
+                    this.device,
                     '-b',
                     this.bitwidth,
                     '--endian',
@@ -61,16 +174,10 @@ class Microphone extends EventEmitter {
                     '-e',
                     this.encoding,
                     '-t',
-                    'waveaudio',
-                    this.device,
-                    '-p',
+                    this.fileType,
+                    '-',
                 ];
-                if (this.additionalParameters) {
-                    audioOptions = audioOptions.concat(
-                        this.additionalParameters
-                    );
-                }
-                this.ps = spawn('sox', audioOptions);
+                command = 'sox';
             } else if (isMac) {
                 audioOptions = [
                     '-q',
@@ -83,15 +190,10 @@ class Microphone extends EventEmitter {
                     '-e',
                     this.encoding,
                     '-t',
-                    'wav',
+                    this.fileType,
                     '-',
                 ];
-                if (this.additionalParameters) {
-                    audioOptions = audioOptions.concat(
-                        this.additionalParameters
-                    );
-                }
-                this.ps = spawn('rec', audioOptions);
+                command = 'rec';
             } else {
                 audioOptions = [
                     '-c',
@@ -100,32 +202,46 @@ class Microphone extends EventEmitter {
                     this.rate,
                     '-f',
                     this.format,
+                    '-t',
+                    this.fileType,
                     '-D',
                     this.device,
                 ];
-                if (this.additionalParameters) {
-                    audioOptions = audioOptions.concat(
-                        this.additionalParameters
-                    );
-                }
-                this.ps = spawn('arecord', audioOptions);
+                command = 'arecord';
             }
-            this.ps.on('error', (error) => {
+
+            if (this.additionalParameters) {
+                audioOptions = audioOptions.concat(this.additionalParameters);
+            }
+
+            this.ps = spawn(command, audioOptions, this.spawnOptions);
+
+            const childProcess = this.ps;
+
+            childProcess.on('error', (error) => {
                 this.emit('error', error);
             });
-            this.ps.stderr.on('error', (error) => {
+            childProcess.on('close', (code, signal) => {
+                if (this.ps === childProcess) {
+                    this.ps = null;
+                }
+                this.emit('close', code, signal);
+            });
+            childProcess.stderr.on('error', (error) => {
                 this.emit('error', error);
             });
-            this.ps.stderr.on('data', (info) => {
+            childProcess.stderr.on('data', (info) => {
                 this.emit('info', info);
             });
             if (this.useDataEmitter) {
-                this.ps.stdout.on('data', (data) => {
+                childProcess.stdout.on('data', (data) => {
                     this.emit('data', data);
                 });
             }
-            return this.ps.stdout;
+            return childProcess.stdout;
         }
+
+        return undefined;
     }
 
     stopRecording() {

@@ -1,12 +1,27 @@
 {
     "name": "node-microphone",
-    "version": "0.1.6",
-    "description": "Allows Microphone access in node with arecord (Linux) and sox (Windows/OSX).",
+    "version": "0.2.0",
+    "description": "Microphone access in Node.js using arecord on Linux and SoX on Windows/macOS.",
     "private": false,
     "main": "index.js",
+    "types": "index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./index.d.ts",
+            "require": "./index.js",
+            "default": "./index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "index.js",
+        "index.d.ts",
+        "README.md",
+        "LICENSE"
+    ],
     "author": "Carlos Knoke Flores <carlos@knoke.net>",
     "engines": {
-        "node": ">=4.0"
+        "node": ">=12"
     },
     "license": "MIT",
     "keywords": [
@@ -19,18 +34,21 @@
         "capture",
         "node-microphone",
         "arecord",
-        "input"
+        "input",
+        "typescript",
+        "macos",
+        "windows"
     ],
     "dependencies": {},
     "scripts": {
-        "test": ""
+        "test": "node ./test.js"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/MexXxo/node-microphone.git"
+        "url": "git+https://github.com/Flowr-es/node-microphone.git"
     },
     "bugs": {
-        "url": "https://github.com/MexXxo/node-microphone/issues"
+        "url": "https://github.com/Flowr-es/node-microphone/issues"
     },
-    "homepage": "https://github.com/MexXxo/node-microphone#readme"
+    "homepage": "https://github.com/Flowr-es/node-microphone#readme"
 }
