@@ -97,7 +97,7 @@ Creates a new microphone instance.
 | `rate` | Sample rate supported by the backend tool | `'16000'` |
 | `channels` | Channel count supported by the backend tool | `'1'` |
 | `fileType` | Output container or stream type supported by the backend tool | `'raw'` |
-| `device` | Input device identifier | Linux: `'plughw:1,0'`, Windows: `'default'` |
+| `device` | Input device identifier | Linux: `'plughw:1,0'`, Windows: `'default'`, macOS: SoX/CoreAudio device name |
 | `additionalParameters` | Raw string arguments appended to the spawn command | `false` |
 | `spawnOptions` | Options object passed to `child_process.spawn()` except `stdio` | `undefined` |
 | `useDataEmitter` | Emit audio chunks through the `data` event | `false` |
@@ -107,7 +107,7 @@ Notes:
 - On Linux, the package uses `arecord -f <format> -t <fileType> -D <device>`.
 - On macOS, the package uses `rec -t <fileType> -`.
 - On Windows, the package uses `sox -t waveaudio <device> ... -t <fileType> -`.
-- `device` is currently applied on Linux and Windows. On macOS, SoX `rec` uses the default input device.
+- On macOS, when `device` is provided, the package passes it through SoX's `AUDIODEV` environment variable.
 - `spawnOptions.stdio` is intentionally rejected because the library depends on piped `stdout` and `stderr`.
 
 ### `startRecording()`

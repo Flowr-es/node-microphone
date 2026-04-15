@@ -125,6 +125,13 @@ class Microphone extends EventEmitter {
                 'default',
             );
         }
+        if (isMac && options.device !== undefined) {
+            this.device = normalizeStringOption(
+                'device',
+                options.device,
+                options.device,
+            );
+        }
         if (!isWin && !isMac) {
             this.device = normalizeStringOption(
                 'device',
@@ -214,7 +221,20 @@ class Microphone extends EventEmitter {
                 audioOptions = audioOptions.concat(this.additionalParameters);
             }
 
-            this.ps = spawn(command, audioOptions, this.spawnOptions);
+            let spawnOptions = this.spawnOptions;
+
+            if (isMac && this.device !== undefined) {
+                spawnOptions = Object.assign({}, this.spawnOptions, {
+                    env: Object.assign(
+                        {},
+                        process.env,
+                        this.spawnOptions && this.spawnOptions.env,
+                        { AUDIODEV: this.device },
+                    ),
+                });
+            }
+
+            this.ps = spawn(command, audioOptions, spawnOptions);
 
             const childProcess = this.ps;
 

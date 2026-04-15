@@ -134,7 +134,10 @@ function testWindowsCommand() {
 function testMacCommandAndStop() {
     const spawnCalls = [];
     const Microphone = loadMicrophoneFor('Darwin', spawnCalls);
-    const mic = new Microphone();
+    const mic = new Microphone({
+        device: 'Built-in Microphone',
+        spawnOptions: { env: { CUSTOM_FLAG: '1' } },
+    });
 
     mic.startRecording();
     mic.stopRecording();
@@ -155,6 +158,11 @@ function testMacCommandAndStop() {
         'raw',
         '-',
     ]);
+    assert.strictEqual(
+        spawnCalls[0].options.env.AUDIODEV,
+        'Built-in Microphone',
+    );
+    assert.strictEqual(spawnCalls[0].options.env.CUSTOM_FLAG, '1');
     assert.deepStrictEqual(spawnCalls[0].child.killCalls, [undefined]);
     assert.strictEqual(mic.ps, null);
 }
